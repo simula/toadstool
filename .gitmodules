@@ -1,0 +1,3 @@
+[submodule "gym-super-mario-bros"]
+	path = gym-super-mario-bros
+	url = git@github.com:simula/gym-super-mario-bros.git

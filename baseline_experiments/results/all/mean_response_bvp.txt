@@ -1,0 +1,20 @@
+Metrics for fold 0
+Mean Squared Error: 0.012444925
+Mean Absolute Error: 0.08551836
+Root Mean Squared Error: 0.11155682212742293
+
+Metrics for fold 1
+Mean Squared Error: 0.011938472
+Mean Absolute Error: 0.08234525
+Root Mean Squared Error: 0.10926331625214455
+
+Metrics for fold 2
+Mean Squared Error: 0.013181086
+Mean Absolute Error: 0.08449085
+Root Mean Squared Error: 0.11480890949010256
+
+Average across all folds
+Mean Squared Error: 0.012521494
+Mean Absolute Error: 0.08411815
+Root Mean Squared Error: 0.11187634928989003
+
