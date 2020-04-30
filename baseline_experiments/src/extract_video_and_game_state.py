@@ -100,6 +100,8 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
         video_start += video_frame_length
         skipped_frames += 1
 
+    cap = cv2.VideoCapture(video_filepath)
+    
     print('Skipped: ' + str(skipped_frames))
     print('VS:' + str(video_start))
     print('GS:' + str(game_start))
@@ -125,7 +127,6 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
 
         #Capture 1 game-frames for each video-frame by skipping every 2nd frame
         cvt_state = cv2.cvtColor(next_state, cv2.COLOR_BGR2RGB)
-        cvt_state = downscale(cvt_state, 224, 224)
         if is_first:
             is_first = False
         else:
@@ -172,7 +173,6 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
         else:
             first = True
             ret, frame = cap.read()
-            frame = downscale(frame, 224, 224)
             cv2.imwrite(os.path.join(output_dir, "image" + str(i) + ".png"), frame)
             i += 1
         if i in gap_indices:
