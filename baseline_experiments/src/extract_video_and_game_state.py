@@ -176,8 +176,12 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
         else:
             first = True
             ret, frame = cap.read()
+
+            if not ret:
+                break
+
             if counter % 30 == 0:   
-                cv2.imwrite(os.path.join(output_dir, "face_" + str(i) + ".png"), frame)
+                cv2.imwrite(os.path.join(output_dir, "face_" + str(counter - 1) + ".png"), frame)
             i += 1
             counter += 1
         if i in gap_indices:
