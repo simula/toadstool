@@ -176,9 +176,10 @@ if __name__ == "__main__":
                 continue
 
             session_path = os.path.join(participant_path, "participant_%s_video_info.json" % participant_id)
+            gap_path = os.path.join(participant_path, "participant_%s_gap_info.json" % participant_id)
             output_file_path = os.path.join(output_path, "participant_%s_sensor" % participant_id, sensor_file)
 
             if sensor_file == "IBI.csv":
                 match_ibi_to_game_session(sensor_path, session_path, output_file_path)
             else:
-                match_sensor_data_to_game_session(sensor_path, session_path, output_file_path)
+                match_sensor_data_to_game_session(sensor_path, session_path, gap_path, output_file_path)
