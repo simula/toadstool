@@ -12,8 +12,8 @@ import numpy as np
 
 argument_parser = argparse.ArgumentParser(description="")
 
-argument_parser.add_argument("-i", "--input-paths", nargs='+', default=["/Users/steven/github/toadstool/baseline_experiments/data/participant_0/sensor/HR.csv"])
-argument_parser.add_argument("-o", "--output-path", type=str, default="test.txt")
+argument_parser.add_argument("-i", "--input-paths", nargs='+')
+argument_parser.add_argument("-o", "--output-path", type=str)
 
 def calculate_mean_response_for_participants(sensor_data_paths, output_path, n_folds):
 

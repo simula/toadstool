@@ -50,50 +50,90 @@ def match_ibi_to_game_session(signal_path, session_path, output_file_path):
             f.write("%s," % line[0])
             f.write("%s\n" % line[1])
 
-def match_sensor_data_to_game_session(signal_path, session_path, output_file_path):
-
-    session_name = os.path.splitext(os.path.basename(session_path))[0]
-
-    if not os.path.exists(os.path.dirname(output_file_path)):
-        os.makedirs(os.path.dirname(output_file_path))
+def match_sensor_data_to_game_session(signal_path, session_path, gap_path, output_file_path):
     
+    e4 = []
+
     with open(session_path) as json_file:
         session = json.load(json_file)
 
-    session_start = session["start_time"]
-    session_stop = session["stop_time"]
+    with open(signal_path, newline='') as csvfile:
+        rd = csv.reader(csvfile)
+        for row in rd:
+            e4.append(row)
 
-    raw_signal_values = []
+    with open(gap_path) as json_file:
+        gap_info = json.load(json_file)
 
-    with open(signal_path) as f:
-        raw_signal_values = [ row for row in f.read().splitlines() ]
+    e4_type = os.path.basename(os.path.splitext(signal_path)[0])
 
-    e4_start = float(raw_signal_values[ 0 ].split(",")[0])
-    samples_per_second = float(raw_signal_values[ 1 ].split(",")[0])
+    e4_pr_sec = float(e4[1][0])
+    e4_start = float(e4[0][0])
 
-    matched_signal_values = []
+    session_start = session['start_time']
+    session_stop = session['stop_time']
 
-    timestep = 1 / samples_per_second
-
+    n_frames = len(session['obs'])
+    missing = gap_info['missing']
+    gap_indices = gap_info['indices']
+    n_gaps = len(gap_indices)
+    avg_gap = int(missing/n_gaps)
+    extra = missing % n_gaps
+    frame_pr_sek = 60
+    
+    timestep = 1 / e4_pr_sec
     j = 2
 
-    while e4_start < session_start - timestep / 2:
+    while e4_start < session_start-timestep/2:
         e4_start += timestep
-        j += 1
+        j +=1
 
     k = j
     e4_end = e4_start
 
-    while e4_end < session_stop - timestep / 2:
+    while e4_end < session_stop-timestep/2:
         e4_end += timestep
-        k += 1
+        k +=1
 
-    for i in range(j, k):
-        if i % 1 == 0 and i < len(raw_signal_values) - 2:
-            matched_signal_values.append(raw_signal_values[ i ])
+    synched_e4 = []
+    for i in range(j,k):
+        synched_e4.append(e4[i])
+        
+    if e4_type == "BVP" or e4_type == "ACC":
+        pruned_e4 = []
+        for i in range(len(synched_e4)):
+            if i % 16 != 0:
+                pruned_e4.append(synched_e4[i])
+        synched_e4 = pruned_e4
+        e4_pr_sec = 60
+        if e4_type == "ACC":
+            e4_pr_sec = 30
 
-    with open(os.path.join(output_file_path), "w") as f:
-        for value in matched_signal_values:
+    frames_pr_e4 = int(frame_pr_sek / e4_pr_sec)
+    transformed_e4 = []
+    times = []
+
+    for i in range(j,k):
+        for l in range(frames_pr_e4):
+            transformed_e4.append(e4[i])
+            times.append(0 + (1/60)*(i-j))
+
+    matching_e4 = []
+    n = 0
+    for i in range(n_frames):
+        matching_e4.append(transformed_e4[n])
+
+        if i in gap_indices:
+            n += avg_gap
+            if extra > 0:
+                n += 1
+                extra -= 1
+
+        i += 1
+        n += 1
+
+    with open(output_file_path, "w") as f:
+        for value in matching_e4:
             f.write("%s\n" % value)
 
 if __name__ == "__main__":

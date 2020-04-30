@@ -30,6 +30,12 @@ _STAGE_ORDER = [
     (4, 2)
 ]
 
+
+def downscale(frame, width, height):
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+    frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_AREA)
+    return frame
+
 def make_next_stage(world, stage, num):
 
     if num < len(_STAGE_ORDER):
@@ -48,87 +54,86 @@ def make_next_stage(world, stage, num):
 
     return world, stage, "SuperMarioBros-%s-%s-v0" % (str(world), str(stage))
 
-def replay_game_from_actions(action_filepath, video_filepath, video_info_filepath, output_dir):
+def replay_game_from_actions(action_filepath, video_filepath, video_info_filepath, gap_path, output_dir):
+
+    stage_order_len = len(_STAGE_ORDER)
+
+    with open(video_info_filepath) as json_file:
+        video_info =  json.load(json_file)
+
+    cap = cv2.VideoCapture(video_filepath)
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    with open(video_info_filepath) as f:
-        video_info = json.load(f)
-
     with open(action_filepath) as json_file:
         data = json.load(json_file)
 
-    cap = None
-
-    if os.path.exists(video_filepath):
-        cap = cv2.VideoCapture(video_filepath)
-
-    first_world = "SuperMarioBros-1-1-v0"
+    first_world = 'SuperMarioBros-1-1-v0'
     env = gym_super_mario_bros.make(first_world)
 
     next_state = env.reset()
+    start = time.time()
 
     world = 1
     stage = 1
     stage_num = 0
 
     video_frame_length = 1 / 30
+    video_start = video_info['start_time']
+    video_stop = video_info['stop_time']
+    game_start = data['start_time']
+    game_stop = data['stop_time']
 
-    video_start = video_info["start_time"]
-    video_stop = video_info["stop_time"]
-    game_start = data["start_time"]
-    game_stop = data["stop_time"]
+    video_time = video_stop - video_start
+    game_time = game_stop - game_start
 
-    print("Frame: %s" % str(video_frame_length))
-    print("VT: %s" % str(video_stop - video_start))
-    print("GT: %s" % str(game_stop - game_start))
-    print("VS: %s" % str(video_start))
-    print("GS: %s" % str(game_start))
+    print('Frame: ' + str(video_frame_length))
+    print('VT:' + str(video_time))
+    print('GT:' + str(game_time))
+    print('VS:' + str(video_start))
+    print('GS:' + str(game_start))
 
     skipped_frames = 0
-
     while video_start < game_start:
         ret, frame = cap.read()
         video_start += video_frame_length
         skipped_frames += 1
 
-    print("Skipped: %s" % str(skipped_frames))
-    print("VS: %s" % str(video_start))
-    print("GS: %s" % str(game_start))
+    print('Skipped: ' + str(skipped_frames))
+    print('VS:' + str(video_start))
+    print('GS:' + str(game_start))
 
     states = []
 
     is_first = True
+    no = 0
     finish = False
-    frame_number = 1
 
     steps = 0
-    counter = 1
 
-    for action in data["obs"]:
+    total_steps = 0
+    gap_indices = []
+
+    for action in data['obs']:
+        
+        env.render()
         
         next_state, reward, done, info = env.step(action)
         steps += 1
+        total_steps += 1
 
+        #Capture 1 game-frames for each video-frame by skipping every 2nd frame
+        cvt_state = cv2.cvtColor(next_state, cv2.COLOR_BGR2RGB)
+        cvt_state = downscale(cvt_state, 224, 224)
         if is_first:
             is_first = False
         else:
-            
-            if cap is not None:
-                ret, frame = cap.read()
-                if counter % 30 == 0:
-                    cv2.imwrite(os.path.join(output_dir, "face_%s.png" % frame_number), frame)
-
-            if counter % 30 == 0 or counter % 30 == 1:
-                cvt_state = cv2.cvtColor(next_state, cv2.COLOR_BGR2RGB)
-                cv2.imwrite(os.path.join(output_dir, "game_%s.png" % frame_number), cvt_state)
-
+            cv2.imwrite(os.path.join(output_dir, "state" + str(no) + ".png"), cvt_state)
             is_first = True
-            frame_number += 1
-            counter += 1
+            no += 1
         
-        if info["flag_get"]:
+        if info['flag_get']:
             finish = True
 
         if done:
@@ -142,8 +147,51 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
                 env = gym_super_mario_bros.make(new_world)
                 finish = False
                 steps = 0
+                gap_indices.append(total_steps)
 
             next_state = env.reset()
+        
+    #Extract video
+    n_gaps = len(gap_indices)
+
+    n_actions = len(data['obs'])
+    missing = 126000 - n_actions
+    video_frames_to_skip = missing/2
+    avg_gap_len = int(video_frames_to_skip / n_gaps)
+    extra = video_frames_to_skip % n_gaps
+
+    i = 0
+    skips = 0
+
+    first = True
+    print('Extracting video')
+    for i in range(n_actions):    
+        if first:
+            first = False
+            i += 1
+        else:
+            first = True
+            ret, frame = cap.read()
+            frame = downscale(frame, 224, 224)
+            cv2.imwrite(os.path.join(output_dir, "image" + str(i) + ".png"), frame)
+            i += 1
+        if i in gap_indices:
+            skips += 1
+            for j in range(int(avg_gap_len)):
+                ret, frame = cap.read()
+            if extra > 0:
+                ret, frame = cap.read()
+                extra -= 1
+        i += 1
+
+    print('Saving gap_info')
+    gap_info = {}
+    gap_info['indices'] = gap_indices
+    gap_info['missing'] = missing
+
+    print('Saving gaps to file')
+    with open(gap_path, 'w') as outfile:
+        json.dump(gap_info, outfile)
 
 if __name__ == "__main__":
 
@@ -159,5 +207,6 @@ if __name__ == "__main__":
     session_path = os.path.join(participant_path, "participant_%s_session.json" % participant_id)
     video_path = os.path.join(participant_path, "participant_%s_video.avi" % participant_id)
     video_info_path = os.path.join(participant_path, "participant_%s_video_info.json" % participant_id)
+    gap_path = os.path.join(participant_path, "participant_%s_gap_info.json" % participant_id)
 
-    replay_game_from_actions(session_path, video_path, video_info_path, output_dir)
+    replay_game_from_actions(session_path, video_path, video_info_path, gap_path, output_dir)
