@@ -99,8 +99,6 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
         ret, frame = cap.read()
         video_start += video_frame_length
         skipped_frames += 1
-
-    cap = cv2.VideoCapture(video_filepath)
     
     print('Skipped: ' + str(skipped_frames))
     print('VS:' + str(video_start))
@@ -117,6 +115,8 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
     total_steps = 0
     gap_indices = []
 
+    counter = 1
+
     for action in data['obs']:
         
         env.render()
@@ -130,9 +130,11 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
         if is_first:
             is_first = False
         else:
-            cv2.imwrite(os.path.join(output_dir, "state" + str(no) + ".png"), cvt_state)
+            if counter % 30 == 0 or counter % 30 == 1:
+                cv2.imwrite(os.path.join(output_dir, "game_" + str(no) + ".png"), cvt_state)
             is_first = True
             no += 1
+            counter += 1
         
         if info['flag_get']:
             finish = True
@@ -163,6 +165,7 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
 
     i = 0
     skips = 0
+    counter = 1
 
     first = True
     print('Extracting video')
@@ -173,8 +176,10 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
         else:
             first = True
             ret, frame = cap.read()
-            cv2.imwrite(os.path.join(output_dir, "image" + str(i) + ".png"), frame)
+            if counter % 30 == 0:   
+                cv2.imwrite(os.path.join(output_dir, "face_" + str(i) + ".png"), frame)
             i += 1
+            counter += 1
         if i in gap_indices:
             skips += 1
             for j in range(int(avg_gap_len)):
