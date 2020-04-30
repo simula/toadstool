@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
         print("Extracting BVP amplitudes for participant %s..." % participant_id)
 
-        bvp_path = os.path.join(participant_path, "participant_%s_sensor_source" % participant_id, "BVP.csv")
+        bvp_path = os.path.join(participant_path, "participant_%s_sensor" % participant_id, "BVP_AMP.csv")
 
         if not os.path.exists(bvp_path):
             print("Skipped %s..." % participant_path)
