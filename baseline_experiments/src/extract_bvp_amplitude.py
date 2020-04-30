@@ -190,6 +190,7 @@ if __name__ == "__main__":
             continue
 
         session_path = os.path.join(participant_path, "participant_%s_video_info.json" % participant_id)
+        gap_path = os.path.join(participant_path, "participant_%s_gap_info.json" % participant_id)
         output_file_path = os.path.join(participant_path, "participant_%s_sensor" % participant_id, "BVP_AMP.csv")
 
-        process_bvp_signal(bvp_path, session_path, output_file_path)
+        synch_bvp(bvp_path, session_path, gap_path, output_file_path)
