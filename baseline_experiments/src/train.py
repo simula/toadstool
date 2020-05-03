@@ -55,7 +55,6 @@ def train_model(x_path, y_path, output_path):
 
         mse = str(evaluation[1])
         mae = str(evaluation[2])
-        rmse = math.sqrt(mse)
 
         with open(history_path, "wb") as f:
             pickle.dump(history.history, f)
@@ -63,7 +62,6 @@ def train_model(x_path, y_path, output_path):
         with open(metrics_log, "w") as f:
             f.write("Mean Squared Error: %s\n" % mse)
             f.write("Mean Absolute Error: %s\n" % mae)
-            f.write("Root Mean Squared Error: %s\n" % rmse)
 
 if __name__ == "__main__":
 

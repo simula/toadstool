@@ -183,14 +183,14 @@ if __name__ == "__main__":
 
         print("Extracting BVP amplitudes for participant %s..." % participant_id)
 
-        bvp_path = os.path.join(participant_path, "participant_%s_sensor_source" % participant_id, "BVP.csv")
+        bvp_path = os.path.join(participant_path, "participant_%s_sensor_raw" % participant_id, "BVP.csv")
 
         if not os.path.exists(bvp_path):
             print("Skipped %s..." % participant_path)
             continue
 
-        session_path = os.path.join(participant_path, "participant_%s_video_info.json" % participant_id)
+        session_path = os.path.join(participant_path, "participant_%s_session.json" % participant_id)
         gap_path = os.path.join(participant_path, "participant_%s_gap_info.json" % participant_id)
         output_file_path = os.path.join(participant_path, "participant_%s_sensor" % participant_id, "BVP_AMP.csv")
 
-        synch_bvp(bvp_path, session_path, gap_path, output_file_path)
+        synch_bvp(bvp_path, session_path, gap_path, output_file_path, True, True)

@@ -8,9 +8,8 @@ argument_parser = argparse.ArgumentParser(description="A script used to match th
 
 argument_parser.add_argument("-d", "--dataset-path", type=str, default=None)
 argument_parser.add_argument("-p", "--participant-path", type=str, default=None)
-argument_parser.add_argument("-o", "--output-path", type=str, default=None)
 
-def match_ibi_to_game_session(signal_path, session_path, output_file_path):
+def synchronize_game_with_sensor_data(signal_path, session_path, output_file_path):
 
     with open(session_path) as json_file:
         session = json.load(json_file)
@@ -134,7 +133,7 @@ def match_sensor_data_to_game_session(signal_path, session_path, gap_path, outpu
 
     with open(output_file_path, "w") as f:
         for value in matching_e4:
-            f.write("%s\n" % value)
+            f.write("%s\n" % " ".join(value))
 
 if __name__ == "__main__":
 
@@ -142,7 +141,6 @@ if __name__ == "__main__":
 
     dataset_path = args.dataset_path
     participant_path = args.participant_path
-    output_path = args.output_path
 
     if dataset_path is None and participant_path is None:
         raise Exception("Please provide either the dataset path or a participant!")
@@ -175,11 +173,11 @@ if __name__ == "__main__":
                 print("Skipped %s..." % participant_path)
                 continue
 
-            session_path = os.path.join(participant_path, "participant_%s_video_info.json" % participant_id)
+            session_path = os.path.join(participant_path, "participant_%s_session.json" % participant_id)
             gap_path = os.path.join(participant_path, "participant_%s_gap_info.json" % participant_id)
-            output_file_path = os.path.join(output_path, "participant_%s_sensor" % participant_id, sensor_file)
+            output_file_path = os.path.join(participant_path, "participant_%s_sensor" % participant_id, sensor_file)
 
             if sensor_file == "IBI.csv":
-                match_ibi_to_game_session(sensor_path, session_path, output_file_path)
+                synchronize_game_with_sensor_data(sensor_path, session_path, output_file_path)
             else:
                 match_sensor_data_to_game_session(sensor_path, session_path, gap_path, output_file_path)

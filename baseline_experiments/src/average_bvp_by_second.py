@@ -11,22 +11,24 @@ argument_parser.add_argument("-d", "--dataset-path", type=str, default=None)
 argument_parser.add_argument("-p", "--participant-path", type=str, default=None)
 
 def average_bvp(bvp_path, output_file_path):
-    
+
+    if not os.path.exists(os.path.dirname(output_file_path)):
+        os.makedirs(os.path.dirname(output_file_path))
+
     averages = [ ]
 
-    with open(bvp_path, newline='') as csvfile:
+    with open(bvp_path) as f:
         bvp = [ float(value) for value in f.readlines() ]
-        for row in rd:
-            bvp.append(row[0])
 
     bvp = np.array(bvp)
     
-    for i in range(0, len(bvp), 64):
-        averages.append(np.mean(bvp[ i : i + 64 ]))
+    for i in range(0, len(bvp), 30):
+        averages.append(np.mean(bvp[ i : i + 30 ]))
 
     with open(output_file_path, "w") as f:
-        for value in averages:
+        for value in averages[:-1]:
             f.write("%s\n" % value)
+        f.write("%s" % averages[-1])
 
 if __name__ == "__main__":
     
@@ -57,6 +59,6 @@ if __name__ == "__main__":
             print("Skipped %s..." % participant_path)
             continue
 
-        output_file_path = os.path.join(participant_path, "participant_%s_sensor" % participant_id, "BVP_AMP_AVG.csv")
+        output_file_path = os.path.join("/home/steven/github/toadstool/baseline_experiments/data", "participant_%s" % participant_id, "sensor", "BVP_AMP_AVG.csv")
 
-        synch_bvp(bvp_path, output_file_path)
+        average_bvp(bvp_path, output_file_path)

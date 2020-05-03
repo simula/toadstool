@@ -30,12 +30,6 @@ _STAGE_ORDER = [
     (4, 2)
 ]
 
-
-def downscale(frame, width, height):
-    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-    frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_AREA)
-    return frame
-
 def make_next_stage(world, stage, num):
 
     if num < len(_STAGE_ORDER):
@@ -95,6 +89,7 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
     print('GS:' + str(game_start))
 
     skipped_frames = 0
+    
     while video_start < game_start:
         ret, frame = cap.read()
         video_start += video_frame_length
@@ -103,8 +98,6 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
     print('Skipped: ' + str(skipped_frames))
     print('VS:' + str(video_start))
     print('GS:' + str(game_start))
-
-    states = []
 
     is_first = True
     no = 0
@@ -163,7 +156,6 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
     avg_gap_len = int(video_frames_to_skip / n_gaps)
     extra = video_frames_to_skip % n_gaps
 
-    i = 0
     skips = 0
     counter = 1
 
@@ -176,10 +168,8 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
         else:
             first = True
             ret, frame = cap.read()
-
             if not ret:
                 break
-
             if counter % 30 == 0:   
                 cv2.imwrite(os.path.join(output_dir, "face_" + str(counter - 1) + ".png"), frame)
             i += 1

@@ -1,13 +1,13 @@
-for i in 0 1 2 3 4 5 7 8 9
+for i in 0 1 2 3 4 5 6 7 8 9
 do
-    python ./src/extract_video_and_game_state.py \
-        -s BVP.csv \
+    python ./src/train.py \
+        -s BVP_AMP_AVG.csv \
         -p participant_$i \
         -o results/participant_$i/results_cnn;
 done
 
-python ./src/extract_video_and_game_state.py \
-        -s BVP.csv \
+python ./src/train.py \
+        -s BVP_AMP_AVG.csv \
     -i  data/participant_0 \
         data/participant_1 \
         data/participant_2 \
