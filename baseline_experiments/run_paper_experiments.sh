@@ -4,15 +4,15 @@ for i in 0 1 2 3 4 5 6 7 8 9
 do
     python extract_synchronized_video_and_game_state.py \
         -p $dataset_path/participant_${i} \
-        -o data/participant_${i};
+        -o $dataset_path/participant_${i};
 
     python extract_synchronized_bvp_amplitude.py \
         -p $dataset_path/participant_${i} \
-        -o data/participant_${i}/participant_${i}_sensor;
+        -o $dataset_path/participant_${i}/participant_${i}_sensor;
 
     python average_bvp_by_second.py \
         -p $dataset_path/participant_${i} \
-        -o data/participant_${i}/participant_${i}_sensor;
+        -o $dataset_path/participant_${i}/participant_${i}_sensor;
 
     python ./src/calculate_mean_response.py \
         -i $dataset_path/participant_${i}_sensor/BVP_AMP_AVG.csv \
