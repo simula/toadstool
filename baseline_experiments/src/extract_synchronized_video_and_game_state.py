@@ -112,7 +112,7 @@ def replay_game_from_actions(action_filepath, video_filepath, video_info_filepat
 
     for action in data['obs']:
         
-        env.render()
+        # env.render()
         
         next_state, reward, done, info = env.step(action)
         steps += 1

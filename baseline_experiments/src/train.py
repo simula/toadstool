@@ -72,7 +72,7 @@ if __name__ == "__main__":
     output_dir = args.output_dir
 
     x_path = [ os.path.join(participant, "frames") for participant in participant_paths ]
-    y_path = [ os.path.join(participant, "sensor", signal_file_name) for participant in participant_paths ]
+    y_path = [ os.path.join(participant, "%s_sensor" % os.path.basename(participant), signal_file_name) for participant in participant_paths ]
 
     train_model(
         x_path=x_path,

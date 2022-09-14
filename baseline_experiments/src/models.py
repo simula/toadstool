@@ -17,6 +17,8 @@ def build_resnet50(input_shape):
     output = Dense(1)(x)
     model = Model(inputs=base_model.input, outputs=output)
 
+    model.summary()
+
     return model
 
 

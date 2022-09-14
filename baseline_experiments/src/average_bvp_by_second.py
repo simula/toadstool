@@ -59,6 +59,6 @@ if __name__ == "__main__":
             print("Skipped %s..." % participant_path)
             continue
 
-        output_file_path = os.path.join("/home/steven/github/toadstool/baseline_experiments/data", "participant_%s" % participant_id, "sensor", "BVP_AMP_AVG.csv")
+        output_file_path = os.path.join(participant_path, "participant_%s_sensor" % participant_id, "BVP_AMP_AVG.csv")
 
         average_bvp(bvp_path, output_file_path)
