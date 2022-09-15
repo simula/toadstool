@@ -1,1 +1,4 @@
 gym-super-mario-bros==7.3.2
+nes-py==4.0.0
+gym==0.10.8
+tensorflow==1.3
